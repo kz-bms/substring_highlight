@@ -15,7 +15,4 @@ dev_dependencies:
     sdk: flutter
 
 flutter:
-  fonts:
-    - family: Noto
-      fonts:
-        - asset: assets/fonts/Noto.ttf
+

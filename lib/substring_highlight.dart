@@ -96,9 +96,13 @@ class SubstringHighlight extends StatelessWidget {
             TextSpan(
                 text: t,
                 style: TextStyle(
-                    fontSize: regexEmoji.allMatches(t).isNotEmpty ? 16 : 14,
+                    fontSize: regexEmoji.allMatches(t).isNotEmpty ? 18 : 14,
                     color: Colors.black,
-                    fontFamily: Platform.isIOS ? 'Noto' : ''))
+                    fontFamily: Platform.isIOS
+                        ? regexEmoji.allMatches(t).isNotEmpty
+                            ? 'Apple Color Emoji'
+                            : ''
+                        : ''))
         ]));
       }
 
