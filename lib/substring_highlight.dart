@@ -1,5 +1,7 @@
 library substring_highlight;
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 final int __int64MaxValue = double.maxFinite.toInt();
@@ -67,6 +69,9 @@ class SubstringHighlight extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final RegExp regexEmoji = RegExp(
+        r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
+
     final String textLC = caseSensitive ? text : text.toLowerCase();
 
     // corner case: if both term and terms array are passed then combine
@@ -84,8 +89,18 @@ class SubstringHighlight extends StatelessWidget {
     int idx = 0; // walks text (string that is searched)
     while (idx < textLC.length) {
       // print('=== idx=$idx');
-      nonHighlightAdd(int end) => children
-          .add(TextSpan(text: text.substring(start, end), style: textStyle));
+
+      nonHighlightAdd(int end) {
+        return children.add(TextSpan(children: [
+          for (String t in text.substring(start, end).characters)
+            TextSpan(
+                text: t,
+                style: TextStyle(
+                    fontSize: regexEmoji.allMatches(t).isNotEmpty ? 16 : 14,
+                    color: Colors.black,
+                    fontFamily: Platform.isIOS ? 'Noto' : ''))
+        ]));
+      }
 
       // find index of term that's closest to current idx position
       int iNearest = -1;
