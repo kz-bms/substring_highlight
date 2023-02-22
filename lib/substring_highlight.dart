@@ -67,11 +67,26 @@ class SubstringHighlight extends StatelessWidget {
   /// If true then match complete words only (instead of characters or substrings within words).  This feature is in ALPHA... use 'words' AT YOUR OWN RISK!!!
   final bool words;
 
+  final RegExp regexEmoji = RegExp(
+      r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
+
+  Map<String, TextStyle> textStylePattern = {
+    r'_(.*?)\_': const TextStyle(
+      fontStyle: FontStyle.italic,
+    ),
+    r'\*(.*?)\*': const TextStyle(
+      fontWeight: FontWeight.bold,
+    ),
+    /* r'\~(.*?)\~': const TextStyle(
+      decoration: TextDecoration.lineThrough,
+    ),*/
+  };
+
+  bool isBold = false;
+  bool isItalic = false;
+
   @override
   Widget build(BuildContext context) {
-    final RegExp regexEmoji = RegExp(
-        r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
-
     final String textLC = caseSensitive ? text : text.toLowerCase();
 
     // corner case: if both term and terms array are passed then combine
@@ -91,19 +106,8 @@ class SubstringHighlight extends StatelessWidget {
       // print('=== idx=$idx');
 
       nonHighlightAdd(int end) {
-        return children.add(TextSpan(children: [
-          for (String t in text.substring(start, end).characters)
-            TextSpan(
-                text: t,
-                style: TextStyle(
-                    fontSize: regexEmoji.allMatches(t).isNotEmpty ? 18 : 14,
-                    color: Colors.black,
-                    fontFamily: Platform.isIOS
-                        ? regexEmoji.allMatches(t).isNotEmpty
-                            ? 'Apple Color Emoji'
-                            : ''
-                        : ''))
-        ]));
+        return children
+            .add(TextSpan(children: getTextStyle(text.substring(start, end))));
       }
 
       // find index of term that's closest to current idx position
@@ -183,5 +187,88 @@ class SubstringHighlight extends StatelessWidget {
         text: TextSpan(children: children, style: textStyle),
         textAlign: textAlign,
         textScaleFactor: MediaQuery.of(context).textScaleFactor);
+  }
+
+  List<InlineSpan> getTextStyle(String text) {
+    List<InlineSpan> child = [];
+
+    var pattern = RegExp(
+        textStylePattern.keys.map((key) {
+          return key;
+        }).join('|'),
+        multiLine: true);
+
+    text.splitMapJoin(
+      pattern,
+      onMatch: (Match match) {
+        for (var char in match[0].toString().characters) {
+          if (char == '*') {
+            isBold = !isBold;
+            child.add(TextSpan(
+                text: "",
+                style: TextStyle(
+                    fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                    fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                    color: Colors.black,
+                    fontFamily: Platform.isIOS
+                        ? regexEmoji.allMatches(char).isNotEmpty
+                            ? 'Apple Color Emoji'
+                            : ''
+                        : '')));
+          } else if (char == '_') {
+            isItalic = !isItalic;
+            child.add(TextSpan(
+                text: "",
+                style: TextStyle(
+                    fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                    color: Colors.black,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                    fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                    fontFamily: Platform.isIOS
+                        ? regexEmoji.allMatches(char).isNotEmpty
+                            ? 'Apple Color Emoji'
+                            : ''
+                        : '')));
+          } else {
+            child.add(TextSpan(
+                text: char,
+                style: TextStyle(
+                    fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                    color: Colors.black,
+                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+                    fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                    fontFamily: Platform.isIOS
+                        ? regexEmoji.allMatches(char).isNotEmpty
+                            ? 'Apple Color Emoji'
+                            : ''
+                        : '')));
+          }
+        }
+
+        return "";
+      },
+      onNonMatch: (String text) {
+        for (String t in text.characters) {
+          child.add(TextSpan(
+              text: (term ?? '').isEmpty
+                  ? t
+                  : RegExp(r'[*_]+').allMatches(t).isNotEmpty
+                      ? " "
+                      : t,
+              style: TextStyle(
+                  fontSize: regexEmoji.allMatches(t).isNotEmpty ? 18 : 14,
+                  color: Colors.black,
+                  fontFamily: Platform.isIOS
+                      ? regexEmoji.allMatches(t).isNotEmpty
+                          ? 'Apple Color Emoji'
+                          : ''
+                      : '')));
+        }
+        return "";
+      },
+    );
+
+    return child;
   }
 }
