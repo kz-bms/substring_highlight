@@ -79,12 +79,12 @@ class SubstringHighlight extends StatelessWidget {
     r'\*(.*?)\*': const TextStyle(
       fontWeight: FontWeight.bold,
     ),
-    r'^(.*?)((?:https?:\/\/|www\.)[^\s/$.?#].[^\s]*)': const TextStyle(color: Colors.blueAccent, decoration: TextDecoration.underline),
+    r'^(.*?)((?:https?:\/\/|www\.)[^\s/$.?#].[^\s]*)': const TextStyle(
+        color: Colors.blueAccent, decoration: TextDecoration.underline),
     /* r'\~(.*?)\~': const TextStyle(
       decoration: TextDecoration.lineThrough,
     ),*/
   };
-
 
   bool isBold = false;
   bool isItalic = false;
@@ -196,10 +196,15 @@ class SubstringHighlight extends StatelessWidget {
   List<InlineSpan> getTextStyle(String text) {
     List<InlineSpan> child = [];
     final urlRegex = RegExp(
+        r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+',
+        caseSensitive: false,
+        dotAll: true);
+/*
+    RegExp(
       r'^(.*?)((?:https?:\/\/|www\.)[^\s/$.?#].[^\s]*)',
       caseSensitive: false,
       dotAll: true,
-    );
+    );*/
 
     var pattern = RegExp(
         textStylePattern.keys.map((key) {
@@ -210,18 +215,22 @@ class SubstringHighlight extends StatelessWidget {
     text.splitMapJoin(
       pattern,
       onMatch: (Match match) {
-        for(var text in match.group(0)!.toString().split(" ")){
+        for (var text in match.group(0)!.toString().split(" ")) {
           text = text + " ";
           var urlMatch = urlRegex.firstMatch(text);
-          if(urlMatch != null){
+          if (urlMatch != null) {
             child.add(TextSpan(
               text: urlMatch.group(0),
-              style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue),
+              style: TextStyle(
+                  decoration: TextDecoration.underline, color: Colors.blue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
-                Uri url = Uri.parse(urlMatch.group(0).toString());
+                  Uri url = Uri.parse(urlMatch.group(0).toString());
                   if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  } else {
+                    await launchUrl(Uri.parse('https://$url'),
+                        mode: LaunchMode.externalApplication);
                   }
                 },
             ));
@@ -232,41 +241,50 @@ class SubstringHighlight extends StatelessWidget {
                 child.add(TextSpan(
                     text: "",
                     style: TextStyle(
-                        fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
-                        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                        fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                        fontSize:
+                            regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                        fontWeight:
+                            isBold ? FontWeight.bold : FontWeight.normal,
+                        fontStyle:
+                            isItalic ? FontStyle.italic : FontStyle.normal,
                         color: Colors.black,
                         fontFamily: Platform.isIOS
                             ? regexEmoji.allMatches(char).isNotEmpty
-                            ? 'Apple Color Emoji'
-                            : ''
+                                ? 'Apple Color Emoji'
+                                : ''
                             : '')));
               } else if (char == '_') {
                 isItalic = !isItalic;
                 child.add(TextSpan(
                     text: "",
                     style: TextStyle(
-                        fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                        fontSize:
+                            regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
                         color: Colors.black,
-                        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                        fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                        fontWeight:
+                            isBold ? FontWeight.bold : FontWeight.normal,
+                        fontStyle:
+                            isItalic ? FontStyle.italic : FontStyle.normal,
                         fontFamily: Platform.isIOS
                             ? regexEmoji.allMatches(char).isNotEmpty
-                            ? 'Apple Color Emoji'
-                            : ''
+                                ? 'Apple Color Emoji'
+                                : ''
                             : '')));
               } else {
                 child.add(TextSpan(
                     text: char,
                     style: TextStyle(
-                        fontSize: regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
+                        fontSize:
+                            regexEmoji.allMatches(char).isNotEmpty ? 18 : 14,
                         color: Colors.black,
-                        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                        fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
+                        fontWeight:
+                            isBold ? FontWeight.bold : FontWeight.normal,
+                        fontStyle:
+                            isItalic ? FontStyle.italic : FontStyle.normal,
                         fontFamily: Platform.isIOS
                             ? regexEmoji.allMatches(char).isNotEmpty
-                            ? 'Apple Color Emoji'
-                            : ''
+                                ? 'Apple Color Emoji'
+                                : ''
                             : '')));
               }
             }
@@ -275,18 +293,25 @@ class SubstringHighlight extends StatelessWidget {
         return "";
       },
       onNonMatch: (String text) {
-        for (var textElement in text.split(" ")){
+        for (var textElement in text.split(" ")) {
           textElement = textElement + " ";
           var urlMatch = urlRegex.firstMatch(textElement);
-          if(urlMatch != null){
+          if (urlMatch != null) {
             child.add(TextSpan(
               text: urlMatch.group(0),
-              style: TextStyle(decoration: TextDecoration.underline, color: Colors.blue),
+              style: TextStyle(
+                  decoration: TextDecoration.underline, color: Colors.blue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
                   Uri url = Uri.parse(urlMatch.group(0).toString());
                   if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
+                    await launchUrl(
+                      url,
+                      mode: LaunchMode.externalApplication,
+                    );
+                  } else {
+                    await launchUrl(Uri.parse('https://$url'),
+                        mode: LaunchMode.externalApplication);
                   }
                 },
             ));
@@ -296,19 +321,18 @@ class SubstringHighlight extends StatelessWidget {
                   text: (term ?? '').isEmpty
                       ? t
                       : RegExp(r'[*_]+').allMatches(t).isNotEmpty
-                      ? " "
-                      : t,
+                          ? " "
+                          : t,
                   style: TextStyle(
                       fontSize: regexEmoji.allMatches(t).isNotEmpty ? 18 : 14,
                       color: Colors.black,
                       fontFamily: Platform.isIOS
                           ? regexEmoji.allMatches(t).isNotEmpty
-                          ? 'Apple Color Emoji'
-                          : ''
+                              ? 'Apple Color Emoji'
+                              : ''
                           : '')));
             }
           }
-
         }
         return "";
       },
