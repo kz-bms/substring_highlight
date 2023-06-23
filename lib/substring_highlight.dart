@@ -79,8 +79,9 @@ class SubstringHighlight extends StatelessWidget {
     r'\*(.*?)\*': const TextStyle(
       fontWeight: FontWeight.bold,
     ),
-    r'^(.*?)((?:https?:\/\/|www\.)[^\s/$.?#].[^\s]*)': const TextStyle(
-        color: Colors.blueAccent, decoration: TextDecoration.underline),
+    r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+|[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)*(\.[a-zA-Z]{2,7})':
+        const TextStyle(
+            color: Colors.blueAccent, decoration: TextDecoration.underline),
     /* r'\~(.*?)\~': const TextStyle(
       decoration: TextDecoration.lineThrough,
     ),*/
@@ -196,7 +197,7 @@ class SubstringHighlight extends StatelessWidget {
   List<InlineSpan> getTextStyle(String text) {
     List<InlineSpan> child = [];
     final urlRegex = RegExp(
-        r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+',
+        r'(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+|[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)*(\.[a-zA-Z]{2,7})',
         caseSensitive: false,
         dotAll: true);
 /*
@@ -228,6 +229,14 @@ class SubstringHighlight extends StatelessWidget {
                   Uri url = Uri.parse(urlMatch.group(0).toString());
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
+                  } else if (urlMatch.group(0)?.contains('@') ?? false) {
+                    // Handle email address here
+                    String email = urlMatch.group(0).toString();
+                    final Uri emailUrl = Uri(
+                      scheme: 'mailto',
+                      path: email,
+                    );
+                    await launchUrl(emailUrl);
                   } else {
                     await launchUrl(Uri.parse('https://$url'),
                         mode: LaunchMode.externalApplication);
@@ -305,10 +314,15 @@ class SubstringHighlight extends StatelessWidget {
                 ..onTap = () async {
                   Uri url = Uri.parse(urlMatch.group(0).toString());
                   if (await canLaunchUrl(url)) {
-                    await launchUrl(
-                      url,
-                      mode: LaunchMode.externalApplication,
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  } else if (urlMatch.group(0)?.contains('@') ?? false) {
+                    // Handle email address here
+                    String email = urlMatch.group(0).toString();
+                    final Uri emailUrl = Uri(
+                      scheme: 'mailto',
+                      path: email,
                     );
+                    await launchUrl(emailUrl);
                   } else {
                     await launchUrl(Uri.parse('https://$url'),
                         mode: LaunchMode.externalApplication);
