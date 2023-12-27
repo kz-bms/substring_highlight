@@ -293,12 +293,12 @@ class SubstringHighlight extends StatelessWidget {
               decoration: TextDecoration.underline, color: Colors.blue),
           recognizer: TapGestureRecognizer()
             ..onTap = () async {
-              Uri url = Uri.parse(text);
+              Uri url = Uri.parse(match.group(0).toString());
               if (await canLaunchUrl(url)) {
                 await launchUrl(url, mode: LaunchMode.externalApplication);
-              } else if (text.contains('@')) {
+              } else if (match.group(0).toString().contains('@')) {
                 // Handle email address here
-                String email = text;
+                String email = match.group(0).toString();
                 final Uri emailUrl = Uri(
                   scheme: 'mailto',
                   path: email,
