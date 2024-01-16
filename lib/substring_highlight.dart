@@ -75,7 +75,6 @@ class SubstringHighlight extends StatelessWidget {
       r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
 
   Map<String, TextStyle> textStylePattern = {
-
     r'(^\*|(?<=\s)\*)[^ \t](.*?)[^ \t]+\*': const TextStyle(
       fontWeight: FontWeight.bold,
     ),
@@ -97,13 +96,14 @@ class SubstringHighlight extends StatelessWidget {
   };
 
   RegExp fileTypeRegex = RegExp(
-      '^.*\.(jpg|jpeg|png|gif|raw|tiff|psd|doc|docx|html|css|xls|xlsx|ppt|pptx|zip|pdf|txt|opus|mp3|mp4|mov|avi|m4a|wav)\$',
-      caseSensitive: false);
+    r'^.*\.(jpg|jpeg|png|gif|raw|tiff|psd|doc|docx|html|css|xls|xlsx|ppt|pptx|zip|pdf|txt|opus|mp3|mp4|mov'
+    r'|avi|m4a|wav|aac|mkv|rtf|bmp|svg|ogg|flac|webm|ogv|csv|json|xml|rar|7z)$',
+    caseSensitive: false,
+  );
 
   final urlRegex = RegExp(
       r'''((https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//="'`]*))''',
-      caseSensitive: false,
-      dotAll: true);
+      caseSensitive: false, dotAll: true);
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +227,7 @@ class SubstringHighlight extends StatelessWidget {
         String matchedText = match.group(0).toString();
 
         TextStyle? textStyle =
-        textStylePattern[textStylePattern.keys.firstWhere((e) {
+            textStylePattern[textStylePattern.keys.firstWhere((e) {
           bool hasMatch = false;
           RegExp(e).allMatches(matchedText).forEach((element) {
             if (element.group(0) == match.group(0)) hasMatch = true;
@@ -257,9 +257,9 @@ class SubstringHighlight extends StatelessWidget {
         if (text.isNotEmpty) {
           child.add(TextSpan(
               children: getUrlTextWidget(
-                text: text,
-                style: style != null ? style.merge(textStyle) : TextStyle(),
-              )));
+            text: text,
+            style: style != null ? style.merge(textStyle) : TextStyle(),
+          )));
         }
         return "";
       },
@@ -267,7 +267,6 @@ class SubstringHighlight extends StatelessWidget {
 
     return TextSpan(children: child);
   }
-
 
   List<TextSpan> getUrlTextWidget({
     required String text,
@@ -280,17 +279,17 @@ class SubstringHighlight extends StatelessWidget {
       if (fileMatch != null) {
         span.add(TextSpan(
             children: getTextStyleWidget(
-              text,
-              style: style ?? const TextStyle(),
-            )));
+          text,
+          style: style ?? const TextStyle(),
+        )));
       } else {
         span.add(TextSpan(
           text: match.group(0).toString(),
           style: style != null
               ? style.merge(TextStyle(
-              decoration: TextDecoration.underline, color: Colors.blue))
+                  decoration: TextDecoration.underline, color: Colors.blue))
               : TextStyle(
-              decoration: TextDecoration.underline, color: Colors.blue),
+                  decoration: TextDecoration.underline, color: Colors.blue),
           recognizer: TapGestureRecognizer()
             ..onTap = () async {
               Uri url = Uri.parse(match.group(0).toString());
@@ -315,9 +314,9 @@ class SubstringHighlight extends StatelessWidget {
     }, onNonMatch: (String text) {
       span.add(TextSpan(
           children: getTextStyleWidget(
-            text,
-            style: style ?? const TextStyle(),
-          )));
+        text,
+        style: style ?? const TextStyle(),
+      )));
       return '';
     });
 
